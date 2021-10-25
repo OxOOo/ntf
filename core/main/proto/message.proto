@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+package proto;
+
+message Header {
+    int64 time_second = 2;
+    int64 encrypted_content_size = 3;
+    string encrypted_content_hmac = 4;
+}
+
+// 正常client向server发送的第一个数据包应该是ping
+// TCP转发向server发送的第一个数据包应该是accept_tcp_forward
+message Content {
+    oneof content {
+        Ping ping = 1;
+        TcpForward new_tcp_forward = 2;
+        TcpForward accept_tcp_forward = 3;
+        TcpPacket tcp_packet = 4;
+    }
+}
+
+message Ping {
+    string message = 1;
+}
+
+// server向client发送，表示一个新的TCP代理请求
+// client向server发送，表示接收一个TCP代理请求
+message TcpForward {
+    string remote_ip = 1;
+    int32 remote_port = 2;
+    string accepted_ip = 3;
+    int32 accepted_port = 4;
+    string to_ip = 5;
+    int32 to_port = 6;
+}
+
+// TCP转发数据包
+message TcpPacket {
+    bytes data = 1;
+}
