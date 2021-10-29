@@ -41,7 +41,18 @@ config_json_str:
 2. 同步配置OK
 CONFIG_OK
 
-3. 返回错误信息
+3. 获取状态
+FETCH_STATUS
+
+4. 返回状态
+STATUS status_json_str
+
+status_json_str:
+{
+    startup_time: string
+}
+
+5. 返回错误信息
 ERR message
 
 ## server 和 client 通信

@@ -42,6 +42,8 @@ constexpr absl::string_view kClientForwardThreadName = "client_forward";
 
 constexpr absl::string_view kManageCommandConfig = "CONFIG";
 constexpr absl::string_view kManageCommandConfigOK = "CONFIG_OK";
+constexpr absl::string_view kManageCommandFetchStatus = "FETCH_STATUS";
+constexpr absl::string_view kManageCommandStatus = "STATUS";
 
 struct Config {
     struct Client {
@@ -143,7 +145,7 @@ absl::StatusOr<Config> ParseConfig(absl::string_view data) {
 
 class Server {
    public:
-    Server() { ended_ = 1; }
+    Server() : startup_time_(absl::Now()) { ended_ = 1; }
 
     absl::Status ManageMain(uint64_t tid, ThreadManager* tm) {
         RETURN_IF_ERROR(tm->SetThreadName(tid, kManageThreadName));
@@ -225,13 +227,24 @@ class Server {
                             {std::string(kManageThreadName)}));
                         // 在下一次循环，会检查ended_并启动其他线程
 
-                        std::lock_guard<std::mutex> lock(mtx_);
-                        config_ = *config;
+                        {
+                            std::lock_guard<std::mutex> lock(mtx_);
+                            config_ = *config;
+                        }
                         RETURN_IF_ERROR(socket->Write(kManageCommandConfigOK));
                     } else {
                         RETURN_IF_ERROR(socket->Write(absl::StrFormat(
                             "ERR %s", config.status().ToString())));
                     }
+                } else if (command == kManageCommandFetchStatus) {
+                    json j;
+                    absl::TimeZone tz = absl::FixedTimeZone(8 * 60 * 60);
+                    j["startup_time"] = absl::FormatTime(startup_time_, tz);
+                    RETURN_IF_ERROR(socket->Write(absl::StrFormat(
+                        "%s %s", kManageCommandStatus, j.dump())));
+                } else {
+                    RETURN_IF_ERROR(socket->Write(
+                        absl::StrFormat("ERR unknow command `%s`", command)));
                 }
             }
         }
@@ -704,6 +717,8 @@ class Server {
     }
 
    private:
+    const absl::Time startup_time_;
+
     struct TcpForwardIncomming {
         std::unique_ptr<net::NetSocket> socket;
         absl::Time created_time;
