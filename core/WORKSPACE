@@ -5,9 +5,9 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 # Toolbase
 http_archive(
     name = "toolbase",
-    sha256 = "80348cd74933525dc64ec61ace3d02a9b0a5822e4624fd1ae20c2e64e898c68b",
-    strip_prefix = "toolbase-7fc449d432d5be23f747ee8c2b710c30dc375447",
-    urls = ["https://github.com/OxOOo/toolbase/archive/7fc449d432d5be23f747ee8c2b710c30dc375447.zip"],
+    sha256 = "ec7c9669e9f5a9ff1782068b31d84c9611e4d63619eaa284d4ee30535e2de198",
+    strip_prefix = "toolbase-a0294e9a5385ee0915b892bfc4bc623f2264029e",
+    urls = ["https://github.com/OxOOo/toolbase/archive/a0294e9a5385ee0915b892bfc4bc623f2264029e.zip"],
 )
 
 # Google Abseil

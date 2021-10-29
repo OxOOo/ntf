@@ -16,6 +16,7 @@ message Content {
         TcpForward new_tcp_forward = 2;
         TcpForward accept_tcp_forward = 3;
         TcpPacket tcp_packet = 4;
+        HeartBeat heartbeat = 5;
     }
 }
 
@@ -37,4 +38,8 @@ message TcpForward {
 // TCP转发数据包
 message TcpPacket {
     bytes data = 1;
+}
+
+message HeartBeat {
+    // nothing
 }
