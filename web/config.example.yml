@@ -1,0 +1,8 @@
+SERVER:
+  ADDRESS: 127.0.0.1
+  PORT: 1234
+  SECRET_KEYS: 'this is secret key' # 加密session用的key
+  MAXAGE: 0 # 静态资源缓存时间,单位ms
+
+ADMIN_PASSWORD: admin
+MANAGE_SOCK_PATH: /tmp/ntf_sock

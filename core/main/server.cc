@@ -45,6 +45,15 @@ constexpr absl::string_view kManageCommandConfigOK = "CONFIG_OK";
 constexpr absl::string_view kManageCommandFetchStatus = "FETCH_STATUS";
 constexpr absl::string_view kManageCommandStatus = "STATUS";
 
+class CallOnDestruct {
+   public:
+    CallOnDestruct(std::function<void()> func) : func_(std::move(func)) {}
+    ~CallOnDestruct() { func_(); }
+
+   private:
+    std::function<void()> func_;
+};
+
 struct Config {
     struct Client {
         std::string id;
@@ -166,6 +175,7 @@ class Server {
 
                 // 变量初始化
                 tcp_incommings_.clear();
+                online_clients_.clear();
 
                 // 启动其他线程
                 tm->Launch(
@@ -240,6 +250,7 @@ class Server {
                     json j;
                     absl::TimeZone tz = absl::FixedTimeZone(8 * 60 * 60);
                     j["startup_time"] = absl::FormatTime(startup_time_, tz);
+                    j["online_clients"] = online_clients_;
                     RETURN_IF_ERROR(socket->Write(absl::StrFormat(
                         "%s %s", kManageCommandStatus, j.dump())));
                 } else {
@@ -429,6 +440,7 @@ class Server {
         std::string key;
         absl::Time last_received_heartbeat = absl::Now();
         absl::Time last_sent_heartbeat = absl::Now();
+        std::unique_ptr<CallOnDestruct> register_id_offline;
 
         ASSIGN_OR_RETURN(auto epoll, file::EPoll::Create());
 
@@ -598,6 +610,16 @@ class Server {
 
                 if (content->has_ping()) {
                     // 这是一个普通client
+                    {
+                        std::lock_guard<std::mutex> lock(mtx_);
+                        if (online_clients_.find(id) != online_clients_.end()) {
+                            return absl::InternalError(absl::StrFormat(
+                                "Client %s already online", id));
+                        }
+                        online_clients_.insert(id);
+                        register_id_offline.reset(new CallOnDestruct(
+                            [this, id]() { online_clients_.erase(id); }));
+                    }
                     RETURN_IF_ERROR(tm->SetThreadName(
                         tid, absl::StrFormat("%s_%s", kClientThreadName, id)));
                     LOG(INFO) << "New ping : " << content->DebugString();
@@ -732,6 +754,7 @@ class Server {
     // 以下数据的读和写需要使用mtx_进行保护
     Config config_;
     std::list<TcpForwardIncomming> tcp_incommings_;
+    std::set<std::string> online_clients_;
 };
 
 }  // namespace

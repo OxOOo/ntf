@@ -49,7 +49,8 @@ STATUS status_json_str
 
 status_json_str:
 {
-    startup_time: string
+    startup_time: string,
+    online_clients: [string]
 }
 
 5. 返回错误信息
