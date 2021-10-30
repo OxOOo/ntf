@@ -101,6 +101,7 @@ export default {
     async created () {
         if (!(await this.IsAdminLogined())) {
             this.$router.replace('/login');
+            return;
         }
         this.update();
     },

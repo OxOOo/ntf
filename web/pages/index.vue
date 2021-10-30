@@ -26,8 +26,8 @@
         <a-tag v-if="record.online" color="green"> 是 </a-tag>
         <a-tag v-else color="volcano"> 否 </a-tag>
       </span>
-      <span slot="tcp_forwards" slot-scope="tcp_forwards">
-        {{ (tcp_forwards || []).length }}
+      <span slot="tcp_forwards" slot-scope="record">
+        {{ (record.tcp_forwards || []).length }}
       </span>
       <span slot="action" slot-scope="record">
         <a-button size="small">
@@ -88,6 +88,7 @@ export default {
     async created () {
         if (!(await this.IsAdminLogined())) {
             this.$router.replace('/login');
+            return;
         }
         this.update();
         setInterval(() => {
