@@ -773,6 +773,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    absl::SleepFor(absl::Seconds(2));
     LOG(INFO) << "Server started";
 
     Server server;
