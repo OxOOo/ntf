@@ -189,6 +189,8 @@ class Server {
 
             // accept new socket
             ASSIGN_OR_RETURN(auto socket, server->Accept());
+            RETURN_IF_ERROR(
+                socket->SetSockOpt<int>(SOL_SOCKET, SO_KEEPALIVE, 1));
 
             // manage一定是一问一答的形式，每次一行
             while (true) {
@@ -309,6 +311,8 @@ class Server {
 
             // accept new socket
             ASSIGN_OR_RETURN(auto socket, server->Accept());
+            RETURN_IF_ERROR(
+                socket->SetSockOpt<int>(SOL_SOCKET, SO_KEEPALIVE, 1));
 
             {
                 std::lock_guard<std::mutex> lock(mtx_);
@@ -402,6 +406,8 @@ class Server {
 
             // accept new socket
             ASSIGN_OR_RETURN(auto socket, server->Accept());
+            RETURN_IF_ERROR(
+                socket->SetSockOpt<int>(SOL_SOCKET, SO_KEEPALIVE, 1));
 
             tm->Launch(std::bind(&Server::ClientSocketThread, this, _1, _2,
                                  socket.release()));

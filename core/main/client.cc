@@ -47,6 +47,7 @@ class Client {
         ASSIGN_OR_RETURN(auto server_addr,
                          net::SocketAddr::NewIPv4(FLAGS_server, FLAGS_port));
         RETURN_IF_ERROR(socket->Connect(server_addr));
+        RETURN_IF_ERROR(socket->SetSockOpt<int>(SOL_SOCKET, SO_KEEPALIVE, 1));
 
         ASSIGN_OR_RETURN(auto socket_io,
                          file::NonblockingIO::Create(std::move(socket)));
@@ -162,6 +163,8 @@ class Client {
                          net::SocketAddr::NewIPv4(tcp_forward.to_ip(),
                                                   tcp_forward.to_port()));
         RETURN_IF_ERROR(tcp_forward_socket->Connect(forward_addr));
+        RETURN_IF_ERROR(
+            tcp_forward_socket->SetSockOpt<int>(SOL_SOCKET, SO_KEEPALIVE, 1));
         ASSIGN_OR_RETURN(
             auto tcp_forward_io,
             file::NonblockingIO::Create(std::move(tcp_forward_socket)));
@@ -171,6 +174,7 @@ class Client {
         ASSIGN_OR_RETURN(auto server_addr,
                          net::SocketAddr::NewIPv4(FLAGS_server, FLAGS_port));
         RETURN_IF_ERROR(socket->Connect(server_addr));
+        RETURN_IF_ERROR(socket->SetSockOpt<int>(SOL_SOCKET, SO_KEEPALIVE, 1));
         ASSIGN_OR_RETURN(auto socket_io,
                          file::NonblockingIO::Create(std::move(socket)));
 
